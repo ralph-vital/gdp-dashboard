@@ -2,15 +2,18 @@ import streamlit as st
 import pandas as pd
 import math
 from pathlib import Path
+import plotly.express as px
 
 # Set the title and favicon that appear in the Browser's tab bar.
 st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
+    page_title='HAITI Edution Indicator dashboard',
+    # This is an emoji shortcode. Could be a URL too.
+    page_icon=':earth_americas:',
 )
 
 # -----------------------------------------------------------------------------
 # Declare some useful functions.
+
 
 @st.cache_data
 def get_gdp_data():
@@ -22,8 +25,8 @@ def get_gdp_data():
     """
 
     # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
+    DATA_FILENAME = Path(__file__).parent/'data/sdg_data_hti.csv'
+    gdp_df = pd.read_csv(DATA_FILENAME, skiprows=[1,])
 
     MIN_YEAR = 1960
     MAX_YEAR = 2022
@@ -45,17 +48,18 @@ def get_gdp_data():
     # - GDP
     #
     # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
-    )
+    # gdp_df = raw_gdp_df.melt(
+    #     ['Country Code'],
+    #     [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
+    #     'Year',
+    #     'GDP',
+    # )
 
     # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
+    gdp_df['year'] = gdp_df['year'].astype(int)
 
     return gdp_df
+
 
 gdp_df = get_gdp_data()
 
@@ -64,19 +68,19 @@ gdp_df = get_gdp_data()
 
 # Set the title that appears at the top of the page.
 '''
-# :earth_americas: GDP dashboard
+# :earth_americas: Haiti Eduction Indicator dashboard
 
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
+Browse  data from the [Unesco Open Data](https://www.uil.unesco.org) website. As you'll
 notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
+But it's otherwise a great (and did I mention _free_?) source of data. Happy visualisation 😊 
 '''
 
 # Add some spacing
 ''
 ''
 
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
+min_value = gdp_df['year'].min()
+max_value = gdp_df['year'].max()
 
 from_year, to_year = st.slider(
     'Which years are you interested in?',
@@ -84,15 +88,15 @@ from_year, to_year = st.slider(
     max_value=max_value,
     value=[min_value, max_value])
 
-countries = gdp_df['Country Code'].unique()
+countries = gdp_df['indicator_id'].unique()
 
 if not len(countries):
-    st.warning("Select at least one country")
+    st.warning("Select at least one indicator")
 
 selected_countries = st.multiselect(
-    'Which countries would you like to view?',
+    'Which indicators would you like to view?',
     countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
+    ['GER.5T8', 'GER.5T8.F', 'AIR.1.GLAST', 'AIR.1.GLAST.M', 'ROFST.1.CP', 'GER.5T8.M'])
 
 ''
 ''
@@ -100,52 +104,53 @@ selected_countries = st.multiselect(
 
 # Filter the data
 filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
+    (gdp_df['indicator_id'].isin(selected_countries))
+    & (gdp_df['year'] <= to_year)
+    & (from_year <= gdp_df['year'])
 ]
 
-st.header('GDP over time', divider='gray')
-
-''
-
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
-)
-
-''
-''
+st.header(f'Education indicator from {
+          from_year} to {to_year}', divider='gray')
 
 
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
+r_fig = px.line(filtered_gdp_df, x='year', y='value', color='indicator_id')
+st.plotly_chart(r_fig)
 
-st.header(f'GDP in {to_year}', divider='gray')
 
-''
+first_year = gdp_df[gdp_df['year'] == from_year]
+last_year = gdp_df[gdp_df['year'] == to_year]
 
-cols = st.columns(4)
+st.header(f'Indicator description', divider='gray')
 
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
 
-    with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
+# cols = st.columns(4)
 
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
-        else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
+# for i, country in enumerate(selected_countries):
+#     col = cols[i % len(cols)]
 
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
-        )
+#     with col:
+#         first_gdp = first_year[first_year['indicator_id']
+#                                == country]['value'].iat[0]
+#         last_gdp = last_year[last_year['indicator_id']
+#                              == country]['value'].iat[0]
+
+#         if math.isnan(first_gdp):
+#             growth = 'n/a'
+#             delta_color = 'off'
+#         else:
+#             growth = f'{last_gdp / first_gdp:,.2f}x'
+#             delta_color = 'normal'
+
+#         st.metric(
+#             label=f'{country} ',
+#             value=f'{last_gdp:,.0f} %',
+#             delta=growth,
+#             delta_color=delta_color
+#         )
+
+
+DATA_FILENAME_2 = Path(__file__).parent/'data/sdg_indicatorlist_hti.csv'
+gdp_df_list = pd.read_csv(DATA_FILENAME_2, skiprows=[1,])
+filtered_gdp_df_list = gdp_df_list[gdp_df_list['indicator_id'].isin(
+    selected_countries)]
+st.table(filtered_gdp_df_list[['indicator_id', 'indicator_label_en']])
