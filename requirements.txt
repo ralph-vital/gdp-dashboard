@@ -2,5 +2,4 @@ streamlit
 pandas
 statsmodels
 seaborn
-matplotlib
 plotlygit
