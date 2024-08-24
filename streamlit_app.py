@@ -165,7 +165,7 @@ def get_fit(SARIMAXmodel):
 
 
 SARIMAXmodel = SARIMAX(y, order=(5, 4, 2), seasonal_order=(2, 2, 2, 12))
-with st.spinner('Wait for it...'):
+with st.spinner('Wait for it... it might take a few minutes'):
     SARIMAXmodel = get_fit(SARIMAXmodel)
 
 
