@@ -4,8 +4,6 @@ import math
 from pathlib import Path
 import plotly.express as px
 from statsmodels.tsa.statespace.sarimax import SARIMAX
-import matplotlib.pyplot as plt
-import seaborn as sns
 import plotly.graph_objects as go
 
 # Set the title and favicon that appear in the Browser's tab bar.
@@ -178,15 +176,7 @@ y_pred_df["Predictions"] = SARIMAXmodel.predict(
 y_pred_df.index = test.index
 y_pred_out = y_pred_df["Predictions"]
 
-# Filter the data
-# fig, ax = plt.subplots(figsize=(3, 3))
 
-# ax.set_ylabel('Xchange Price')
-# ax.set_xlabel('Date')
-# # ax.set_xticklabels(rotation=45)
-# ax.plot(gdp_df.index, gdp_df['Value'],  label='True value')
-# ax.plot(y_pred_out, color='Red', label='SARIMA Predictions')
-# ax.legend()
 
 st.header("Forcasting Haiti Xchange US Dollar/Gourdes")
 
@@ -211,26 +201,3 @@ fig_y.update_layout(title='Forcasting Haiti Xchage US Dollar/Gourdes',
                     yaxis_title='Value')
 st.plotly_chart(fig_y)
 # cols = st.columns(4)
-
-# for i, country in enumerate(selected_countries):
-#     col = cols[i % len(cols)]
-
-#     with col:
-#         first_gdp = first_year[first_year['indicator_id']
-#                                == country]['value'].iat[0]
-#         last_gdp = last_year[last_year['indicator_id']
-#                              == country]['value'].iat[0]
-
-#         if math.isnan(first_gdp):
-#             growth = 'n/a'
-#             delta_color = 'off'
-#         else:
-#             growth = f'{last_gdp / first_gdp:,.2f}x'
-#             delta_color = 'normal'
-
-#         st.metric(
-#             label=f'{country} ',
-#             value=f'{last_gdp:,.0f} %',
-#             delta=growth,
-#             delta_color=delta_color
-#         )
