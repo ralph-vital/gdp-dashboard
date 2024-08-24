@@ -3,3 +3,4 @@ pandas
 statsmodels
 seaborn
 matplotlib
+plotlygit a
